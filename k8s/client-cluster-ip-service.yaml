@@ -1,0 +1,13 @@
+# Service type "ClusterIP" exposes as set of pods to other objects in the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector:
+    component: web
+  ports:
+    - port: 3000 # accessible from the outside on 3000
+      targetPort: 3000  
+    
