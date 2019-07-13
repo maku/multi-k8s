@@ -76,6 +76,7 @@ Using martingcp@gmx.at account
  
 Create a cluster on https://console.cloud.google.com/kubernetes
  
+* Name: multi-cluster
 * Location type **Zonal**
 * Zone **europe-west3-b**
 * Node Pool
@@ -83,6 +84,18 @@ Create a cluster on https://console.cloud.google.com/kubernetes
     * Default (1vCPU, 3.75GB memory)  (costs * Number of nodes )
  
  
+## Set env variables in Google cloud 
+
+Starting a Cloud Shell in Google Cloud  (https://console.cloud.google.com/kubernetes)
+
+Run the following commands (like also in travis) 
+ 
+* gcloud config set project multi-k8s-246512
+* gcloud config set compute/zone europe-west3-b
+* gcloud container clusters get-credentials multi-cluster
+* kubectl create secret generic pgpassword --from-literal PGPASSWORD=complex 
+
+The "pgpassword" is now available in Configuration
  
 ## Creating a service account 
 
@@ -93,6 +106,36 @@ https://console.cloud.google.com/iam-admin/serviceaccounts -> Create service acc
 -> Create Key: Key type "JSON" -> results in a file which has to kept private 
 
 
+## Installing Helm on GKE (via Cloud Shell)
+
+https://helm.sh/docs/using_helm/#quickstart -> Installing from Script 
+ 
+ 
+ `$ curl -LO https://git.io/get_helm.sh
+ $ chmod 700 get_helm.sh
+ $ ./get_helm.sh
+ `
+ 
+### Create a new service account called tiller in the kube-system namespace (to allow tiller to work)
+ 
+ `kubectl create serviceaccount --namespace kube-system tiller`
+ 
+### Create a new clusterrolebinding with the role 'cluster-admin' (preset cluster role) and assign it to service account 'tiller'
+ 
+`kubectl create clusterrolebinding tiller-cluster-role --clusterrole=cluster-admin --serviceaccount=kube-system:tiller` 
+
+### Init helm
+`helm init --service-account tiller --upgrade`
+
+## Install nginx ingress
+
+https://kubernetes.github.io/ingress-nginx/deploy/#using-helm
+
+`helm install stable/nginx-ingress --name my-nginx --set rbac.create=true`
+
+
+
+# Travis
 
 ## Installing Travis CLI and upload 
 e.g. for using the account with **travisci**
@@ -139,3 +182,13 @@ Then gcp-service-account.json should be deleted. gcp-service-account.json.enc sh
 Encrypt and upload the json file to our Travis account
 
 In travis.yml, add code to unencrypt the json file and load it into GCloud SDK   
+
+
+
+### deploy via deploy script
+
+deploy.sh is responsible to build / push docker images and to update kubernetes.
+
+deploy.sh is used in travis.yml
+
+

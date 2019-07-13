@@ -1,10 +1,27 @@
 sudo: required
 services:
   - docker
+env:
+  global:
+    - SHA=$(git rev-parse HEAD) # env variable to get git sha
+    - CLOUDSDK_CORE_DISABLE_PROMPTS=1
 before_install:
   - openssl aes-256-cbc -K $encrypted_e922d1b7c296_key -iv $encrypted_e922d1b7c296_iv -in gcp-service-account.json.enc -out gcp-service-account.json -d
   - curl https://sdk.cloud.google.com | bash > /dev/null; # download Google Cloud SDK (Installing)
   - source $HOME/google-cloud-sdk/path.bash.inc # applying
   - gcloud components update kubectl
-  - gcloud auth activate-service-account --key-file service-account.json   # Login in google cloud (via file)
-  
+  - gcloud auth activate-service-account --key-file gcp-service-account.json   # Login in google cloud (via file)
+  - gcloud config set project multi-k8s-246512
+  - gcloud config set compute/zone europe-west3-b
+  - gcloud container clusters get-credentials multi-cluster
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin # variables have to be set in project settings in travisci
+  - docker build -t makuat/react-test -f ./client/Dcokerfile.dev ./client
+
+script:
+  - docker run -e CI=true makuat/react-test npm run test -- --coverage
+
+deploy:
+    provider: script
+    script: bash ./deploy.sh
+    on:
+      branch: master
