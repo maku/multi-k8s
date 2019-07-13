@@ -14,7 +14,7 @@ before_install:
   - gcloud config set project multi-k8s-246512
   - gcloud config set compute/zone europe-west3-b
   - gcloud container clusters get-credentials multi-cluster
-  - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_ID" --password-stdin # variables have to be set in project settings in travisci
+  - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin # variables have to be set in project settings in travisci
   - docker build -t makuat/react-test -f ./client/Dcokerfile.dev ./client
 
 script:
