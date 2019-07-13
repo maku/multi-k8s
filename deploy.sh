@@ -20,4 +20,4 @@ kubectl set image deployments/client-deployment client=makuat/multi-client:$SHA
 kubectl set image deployments/server-deployment server=makuat/multi-server:$SHA
 kubectl set image deployments/worker-deployment worker=makuat/multi-worker:$SHA
 
-kubectl set image deployment/client-deployment client=makuat/multi-client:v5
+
